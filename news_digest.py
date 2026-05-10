@@ -116,10 +116,10 @@ Bruk dette formatet for hver sak:
 
     for attempt in range(4):
         try:
-            response = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
+            response = client.models.generate_content(model="gemini-2.5-flash-preview-05-20", contents=prompt)
             return response.text
         except genai_errors.ClientError as e:
-            if e.status_code == 429 and attempt < 3:
+            if e.code == 429 and attempt < 3:
                 wait = 60 * (attempt + 1)
                 print(f"Rate limit hit, venter {wait}s (forsøk {attempt + 1}/4)...")
                 time.sleep(wait)
