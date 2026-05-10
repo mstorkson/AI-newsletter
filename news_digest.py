@@ -116,7 +116,7 @@ Bruk dette formatet for hver sak:
 
     for attempt in range(4):
         try:
-            response = client.models.generate_content(model="gemini-2.5-flash-preview-05-20", contents=prompt)
+            response = client.models.generate_content(model="gemini-2.0-flash-lite", contents=prompt)
             return response.text
         except genai_errors.ClientError as e:
             if e.code == 429 and attempt < 3:
