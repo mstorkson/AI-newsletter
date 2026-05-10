@@ -6,10 +6,12 @@ Kjøres automatisk via GitHub Actions hver morgen.
 import feedparser
 import smtplib
 import os
+import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime, timezone, timedelta
 from google import genai
+from google.genai import errors as genai_errors
 
 # ── Nyhetskilder ────────────────────────────────────────────────────────────
 FEEDS = [
@@ -112,8 +114,17 @@ Bruk dette formatet for hver sak:
 {articles_text}
 """
 
-    response = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
-    return response.text
+    for attempt in range(4):
+        try:
+            response = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
+            return response.text
+        except genai_errors.ClientError as e:
+            if e.status_code == 429 and attempt < 3:
+                wait = 60 * (attempt + 1)
+                print(f"Rate limit hit, venter {wait}s (forsøk {attempt + 1}/4)...")
+                time.sleep(wait)
+            else:
+                raise
 
 
 # ── Bygg HTML-epost ─────────────────────────────────────────────────────────
