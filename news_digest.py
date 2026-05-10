@@ -9,7 +9,7 @@ import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime, timezone, timedelta
-import google.generativeai as genai
+from google import genai
 
 # ── Nyhetskilder ────────────────────────────────────────────────────────────
 FEEDS = [
@@ -78,8 +78,7 @@ def generate_digest(articles):
     if not articles:
         return "Ingen nye AI-nyheter funnet i dag."
 
-    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
     # Bygg input til Gemini
     articles_text = ""
@@ -113,7 +112,7 @@ Bruk dette formatet for hver sak:
 {articles_text}
 """
 
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
     return response.text
 
 

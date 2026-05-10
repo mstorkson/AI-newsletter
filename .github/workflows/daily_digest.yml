@@ -8,6 +8,9 @@ on:
   # Gjør det mulig å kjøre manuelt fra GitHub for testing
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   send-digest:
     runs-on: ubuntu-latest
