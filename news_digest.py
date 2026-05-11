@@ -78,7 +78,10 @@ def generate_digest(articles):
     if not articles:
         return "Ingen nye AI-nyheter funnet i dag."
 
-    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    client = OpenAI(
+        base_url="https://models.inference.ai.azure.com",
+        api_key=os.environ["GITHUB_TOKEN"],
+    )
 
     articles_text = ""
     for i, a in enumerate(articles, 1):
