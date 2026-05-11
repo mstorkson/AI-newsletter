@@ -1,5 +1,5 @@
 """
-AI News Digest – daglig epostsammendrag med Gemini AI
+AI News Digest – daglig epostsammendrag med GitHub Models AI
 Kjøres automatisk via GitHub Actions hver morgen.
 """
 
@@ -73,7 +73,7 @@ def fetch_articles():
     return articles
 
 
-# ── Lag AI-sammendrag med Gemini ────────────────────────────────────────────
+# ── Lag AI-sammendrag med GitHub Models ─────────────────────────────────────
 def generate_digest(articles):
     if not articles:
         return "Ingen nye AI-nyheter funnet i dag."
