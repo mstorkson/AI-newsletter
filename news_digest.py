@@ -160,7 +160,7 @@ def build_email_html(digest_text, article_count):
     {html_body}
   </div>
   <div class="footer">
-    Generert automatisk med Gemini AI og GitHub Actions
+    Generert automatisk med GitHub Models AI og GitHub Actions
   </div>
 </body>
 </html>
