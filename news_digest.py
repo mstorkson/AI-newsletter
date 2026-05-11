@@ -23,6 +23,7 @@ FEEDS = [
     ("Ars Technica",         "https://feeds.arstechnica.com/arstechnica/technology-lab"),
     ("Hugging Face Blog",    "https://huggingface.co/blog/feed.xml"),
     ("OpenAI Blog",          "https://openai.com/blog/rss.xml"),
+    ("Google Gemini news",   "https://blog.google/products-and-platforms/products/gemini/rss/")
 ]
 
 MAX_ARTICLES_PER_FEED = 4   # Maks artikler å hente per kilde
