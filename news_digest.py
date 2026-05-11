@@ -6,12 +6,10 @@ Kjøres automatisk via GitHub Actions hver morgen.
 import feedparser
 import smtplib
 import os
-import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime, timezone, timedelta
-from google import genai
-from google.genai import errors as genai_errors
+from openai import OpenAI
 
 # ── Nyhetskilder ────────────────────────────────────────────────────────────
 FEEDS = [
@@ -80,9 +78,8 @@ def generate_digest(articles):
     if not articles:
         return "Ingen nye AI-nyheter funnet i dag."
 
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
-    # Bygg input til Gemini
     articles_text = ""
     for i, a in enumerate(articles, 1):
         articles_text += f"""
@@ -114,17 +111,12 @@ Bruk dette formatet for hver sak:
 {articles_text}
 """
 
-    for attempt in range(4):
-        try:
-            response = client.models.generate_content(model="gemini-2.0-flash-lite", contents=prompt)
-            return response.text
-        except genai_errors.ClientError as e:
-            if e.code == 429 and attempt < 3:
-                wait = 60 * (attempt + 1)
-                print(f"Rate limit hit, venter {wait}s (forsøk {attempt + 1}/4)...")
-                time.sleep(wait)
-            else:
-                raise
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=2000,
+    )
+    return response.choices[0].message.content
 
 
 # ── Bygg HTML-epost ─────────────────────────────────────────────────────────
