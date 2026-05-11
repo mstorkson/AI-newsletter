@@ -6,6 +6,9 @@ Kjøres automatisk via GitHub Actions hver morgen.
 import feedparser
 import smtplib
 import os
+import re
+import requests
+from bs4 import BeautifulSoup
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime, timezone, timedelta
@@ -53,8 +56,6 @@ def fetch_articles():
                 summary = entry.get("summary", entry.get("description", ""))
                 link    = entry.get("link", "")
 
-                # Rens HTML-tags fra summary
-                import re
                 summary = re.sub(r"<[^>]+>", "", summary)[:600]
 
                 articles.append({
@@ -69,7 +70,56 @@ def fetch_articles():
         except Exception as e:
             print(f"Feil ved henting fra {source_name}: {e}")
 
+    articles += fetch_anthropic_news(cutoff)
     print(f"Hentet {len(articles)} artikler totalt.")
+    return articles
+
+
+# ── Hent nyheter fra Anthropic (scraping) ───────────────────────────────────
+def fetch_anthropic_news(cutoff):
+    articles = []
+    try:
+        resp = requests.get(
+            "https://www.anthropic.com/news",
+            headers={"User-Agent": "Mozilla/5.0"},
+            timeout=15,
+        )
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        for link_tag in soup.find_all("a", href=re.compile(r"^/news/.+")):
+            title_tag = link_tag.find(["h2", "h3", "h4", "h5"])
+            time_tag  = link_tag.find("time")
+            if not title_tag:
+                continue
+
+            title = title_tag.get_text(strip=True)
+            url   = "https://www.anthropic.com" + link_tag["href"]
+            date_str = time_tag.get_text(strip=True) if time_tag else ""
+
+            published = None
+            for fmt in ("%b %d, %Y", "%B %d, %Y"):
+                try:
+                    published = datetime.strptime(date_str, fmt).replace(tzinfo=timezone.utc)
+                    break
+                except ValueError:
+                    pass
+
+            if published and published < cutoff:
+                continue
+
+            articles.append({
+                "source":  "Anthropic News",
+                "title":   title,
+                "summary": "",
+                "link":    url,
+                "date":    published.strftime("%d.%m.%Y") if published else date_str,
+            })
+            if len(articles) >= MAX_ARTICLES_PER_FEED:
+                break
+
+    except Exception as e:
+        print(f"Feil ved henting fra Anthropic News: {e}")
+
     return articles
 
 
